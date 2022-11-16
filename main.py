@@ -5,22 +5,79 @@
 # 1. Run 'python main.py' without the quotes.
 # 2. When prompted to input, paste the entire graph representation OR enter it line by line, and when finished hit
 #    enter TWICE to create an empty line. The program recognizes an empty line as the end of the input.
+import math
 
+# Heap helper functions
+def parent(index):
+    return index / 2
+
+def ltChild(index):
+    return (2 * index) + 1
+
+def rtChild(index):
+    return (2 * index) + 2
+
+
+# Heap class
 class Heap:
-    def __init__(self):
-        self.items = []
+    def __init__(self, size):
+        self.heap = [0] * size
+        self.heap[0] = -1
         self.size = 0
+        self.max_size = size
 
     def is_empty(self):
-        return self.size == 0 or len(self.items) == 0
+        return self.size == 0 or len(self.heap) == 0
+
+    def leaf(self, index):
+        return index > (self.size / 2) - 1
+
+    def heapify(self, index):
+        if self.leaf(index):
+            return
+        # TODO: Left off here
+
+    # Swap two vertices in the heap
+    def swap(self, first_index, second_index):
+        temp = self.heap[first_index]
+        self.heap[first_index] = self.heap[second_index]
+        self.heap[second_index] = temp
+
+    def insert(self, vertex):
+        if self.size >= self.max_size:
+            return
+
+        self.size += 1
+        self.heap[self.size] = vertex
+        cur = self.size
+
+        while self.heap[cur] < self.heap[parent(cur)]:
+            self.swap(cur, parent(cur))
+            cur = parent(cur)
+
+    def extract_min(self):
+        minimum = self.heap[0]
+        self.heap[0] = self.heap[self.size]
+        self.size -= 1
+        self.heapify(0)
+        return minimum
+
+    def show(self):
+        print(self.heap)
 
 
 def dijkstra(vertices, edges, adjacency_list, source):
     dist = [None] * len(vertices)
     prev = [None] * len(vertices)
     dist[source] = 0
-    # Queue/Heap is set of all nodes in graph
-    h = Heap()
+    # Queue/Heap is set of all vertices in graph
+    h = Heap(len(vertices))
+
+    # Build the heap
+    for v in vertices:
+        h.insert(v)
+
+    h.show()
 
     while h.is_empty() is False:
         # u is node in q with smallest dist
