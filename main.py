@@ -14,11 +14,11 @@ def parent(index):
     return (index - 1) // 2
 
 
-def ltChild(index):
+def lt_child(index):
     return (2 * index) + 1
 
 
-def rtChild(index):
+def rt_child(index):
     return (2 * index) + 2
 
 
@@ -32,6 +32,10 @@ class Heap:
         self.size = 0
         self.max_size = max_size
 
+    # Set the position of the source vertex to its index in the positions array
+    def setup(self, src):
+        self.positions[src] = src
+
     def is_empty(self):
         return self.size == 0 or len(self.heap) == 0
 
@@ -39,23 +43,44 @@ class Heap:
         return index > (self.size / 2) - 1
 
     def heapify(self, index):
-        if self.leaf(index):
-            return
-        temp_pos = index
-        if rtChild(index) <= self.size:
-            temp_pos = ltChild(index) if self.heap[ltChild(index)] < self.heap[rtChild(index)] else rtChild(index)
-        else:
-            temp_pos = self.heap[ltChild(index)]
+        heapify_at_index = index
+        left_child_index = lt_child(index)
+        right_child_index = rt_child(index)
 
-        if self.heap[index] > self.heap[ltChild(index)] or self.heap[index] > self.heap[rtChild(index)]:
-            self.swap(index, temp_pos)
-            self.heapify(temp_pos)
+        if left_child_index < self.size - 1 and self.heap[left_child_index][1] < self.heap[heapify_at_index][1]:
+            heapify_at_index = left_child_index
 
-    # Swap two vertices in the heap
+        if right_child_index < self.size - 1 and self.heap[right_child_index][1] < self.heap[heapify_at_index][1]:
+            heapify_at_index = right_child_index
+
+        if heapify_at_index != index:
+            self.swap(heapify_at_index, index)
+            self.heapify(heapify_at_index)
+
+    def decrease_key(self, vertex, distance):
+        # Update the distance value of the vertex in question
+        pos_of_vertex_in_heap = self.positions[vertex]
+        self.heap[pos_of_vertex_in_heap][1] = distance
+
+        # While the distance value of the vertex is less than that of its parent
+        while self.heap[pos_of_vertex_in_heap] is not None and self.heap[parent(pos_of_vertex_in_heap)] is not None \
+                and self.heap[pos_of_vertex_in_heap][1] < self.heap[parent(pos_of_vertex_in_heap)][1]:
+            # Bubble up the lower value to maintain min heap property
+            self.swap(pos_of_vertex_in_heap, parent(pos_of_vertex_in_heap))
+            # Check again
+            pos_of_vertex_in_heap = parent(pos_of_vertex_in_heap)
+
+    # Swap two vertices in the heap and positions watcher
     def swap(self, first_index, second_index):
-        temp = self.heap[first_index]
+        # Heap
+        temp_heap_val = self.heap[first_index]
         self.heap[first_index] = self.heap[second_index]
-        self.heap[second_index] = temp
+        self.heap[second_index] = temp_heap_val
+
+        # Positions watcher
+        temp_pos_val = self.positions[first_index]
+        self.positions[first_index] = self.positions[second_index]
+        self.positions[second_index] = temp_pos_val
 
     def insert(self, vertex):
         if self.size >= self.max_size:
@@ -64,28 +89,31 @@ class Heap:
         self.heap[self.size] = vertex
         self.positions[self.size] = vertex[0]
         self.size += 1
-        #
-        # next_vertex_index = self.size
-        #
-        # # Maintain heap property
-        # while self.heap[next_vertex_index] is not None and self.heap[parent(next_vertex_index)] is not None \
-        #         and self.heap[next_vertex_index] < self.heap[parent(next_vertex_index)]:
-        #     self.swap(next_vertex_index, parent(next_vertex_index))
-        #     next_vertex_index = parent(next_vertex_index)
 
+    def vertex_is_in_heap(self, vertex):
+        return self.positions[vertex] < self.size
+
+    # Returns the vertex with the lowest distance
     def extract_min(self):
+        # Get the minimum
         minimum = self.heap[0]
-        self.heap[0] = self.heap[self.size]
+
+        # Swap the new minimum with the last entry in the heap (aka the one with the largest distance value)
+        self.swap(0, self.size - 1)
+
+        # Decrease size
         self.size -= 1
+
         self.heapify(0)
         return minimum
 
     def show(self):
         print('heap', self.heap)
         print('positions', self.positions)
+        print('size', self.size)
 
 
-# Assume source is 1 (or in this case, 0 due to the zero based indexing convention)
+# Assume source is 1 according to assignment instructions (or in this case, 0 due to the zero-based indexing convention)
 def dijkstra(adjacency_list, vertices, src=0):
     # Get a count of all the vertices
     vertices_count = len(vertices)
@@ -95,34 +123,50 @@ def dijkstra(adjacency_list, vertices, src=0):
 
     # Watch/Manage distances from source (for example, distances[5] = 8 means the distance from the source to 5 is 8)
     distances = []
+    previous = []
 
     # Runs V times
     for vertex_index in range(vertices_count):
         distances.append(sys.maxint)
+        previous.append(sys.maxint)
         h.insert([vertex_index, distances[vertex_index]])
 
-    h.show()
+    h.setup(src)
+    distances[src] = 0
+    h.decrease_key(src, 0)
 
     # While heap is not empty
-    # while h.is_empty() is False:
-    #     # u node in heap with smallest dist
-    #     # remove u from heap
-    #     u = h.extract_min()
-    #     print(u)
-    #
-    #     # for each neighbor v of u according to adjacency list:
-    #     # neighbor is in format [neighborVertex, distanceFromIndexVertex]
-    #     for [neighborVertex, distanceFromIndexVertex] in adjacency_list[u]:
-    #         print('neighbor of', u, 'is', neighborVertex, 'with distance', distanceFromIndexVertex)
-    #         acc = dist[u] + distanceFromIndexVertex
-    #         print('acc', acc)
-    #         # If shorter distance was found (?)
-    #         if acc < dist[neighborVertex]:
-    #             dist[neighborVertex] = acc
-    #             prev[neighborVertex] = u
-    #             break
+    while h.is_empty() is False:
+        # u is the node in heap with the smallest distance
+        # in the first iteration, it will be the source node
+        u = h.extract_min()
+        min_vertex = u[0]
 
-    print('done')
+        if adjacency_list[min_vertex] is None:
+            continue
+
+        # for each neighbor v of u according to adjacency list:
+        # neighbor is in format [neighborVertex, distanceFromMinVertex]
+        for incident_vertex in adjacency_list[min_vertex]:
+            if distances[min_vertex] == sys.maxint:
+                continue
+
+            [neighbor_vertex, distance_from_min_vertex] = incident_vertex
+
+            if h.vertex_is_in_heap(neighbor_vertex) is False:
+                continue
+
+            print('neighbor of', min_vertex, 'is', neighbor_vertex, 'with distance', distance_from_min_vertex)
+
+            accumulated_distance = distances[min_vertex] + distance_from_min_vertex
+            print('accumulated_distance', accumulated_distance)
+
+            # If shorter distance was just discovered from source to the neighboring vertex
+            if accumulated_distance < distances[neighbor_vertex]:
+                distances[neighbor_vertex] = accumulated_distance
+                h.decrease_key(neighbor_vertex, accumulated_distance)
+
+    h.show()
 
 def main():
     edges = []
