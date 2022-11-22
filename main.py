@@ -125,7 +125,7 @@ def dijkstra(adjacency_list, vertices, src=0):
     # Runs V times
     for vertex_index in range(vertices_count):
         distances.append(sys.maxint)
-        previous.append(sys.maxint)
+        previous.append(None)
         h.insert([vertex_index, distances[vertex_index]])
 
     h.setup(src)
@@ -155,14 +155,27 @@ def dijkstra(adjacency_list, vertices, src=0):
             if accumulated_distance < distances[neighbor_vertex]:
                 print('found shorter distance from {0} to {1}'.format(min_vertex, neighbor_vertex))
                 distances[neighbor_vertex] = accumulated_distance
+                previous[neighbor_vertex] = min_vertex
                 h.decrease_key(neighbor_vertex, accumulated_distance)
 
     print('Source Vertex is Vertex {0}\n'.format(src + 1))
     for i in range(len(distances)):
-        print('Vertex {0}'.format(i + 1))
-        print('Shortest Distance is {0}'.format(distances[i]))
-        print('Shortest Path is not yet implemented')
-        print('-----------------------------------------------')
+        print('Vertex: {0}'.format(i + 1))
+        print('Shortest Distance: {0}'.format(distances[i]))
+        if i == src:
+            print "This is the source vertex",
+        else:
+            print "Shortest Path: ",
+            shortest_path = []
+            cur = i
+            while cur != src:
+                prev = previous[cur]
+                shortest_path.append(prev)
+                cur = prev
+            for y in reversed(shortest_path):
+                print y + 1,
+            print i + 1,
+        print('\n-----------------------------------------------')
 
 
 def main():
