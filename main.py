@@ -156,17 +156,25 @@ def dijkstra(adjacency_list, vertices, src=0):
             if h.vertex_is_in_heap(neighbor_vertex) is False:
                 continue
 
-            print('neighbor of', min_vertex, 'is', neighbor_vertex, 'with distance', distance_from_min_vertex)
+            # print('neighbor of', min_vertex, 'is', neighbor_vertex, 'with distance', distance_from_min_vertex)
 
             accumulated_distance = distances[min_vertex] + distance_from_min_vertex
-            print('accumulated_distance', accumulated_distance)
 
             # If shorter distance was just discovered from source to the neighboring vertex
             if accumulated_distance < distances[neighbor_vertex]:
                 distances[neighbor_vertex] = accumulated_distance
                 h.decrease_key(neighbor_vertex, accumulated_distance)
 
-    h.show()
+    print('Source Vertex is Vertex {0}\n'.format(src + 1))
+    for i in range(len(distances)):
+        print('Vertex {0}'.format(i + 1))
+        print('Shortest Distance is {0}'.format(distances[i]))
+        print('Shortest Path is not yet implemented')
+        print('-----------------------------------------------')
+
+
+
+
 
 def main():
     edges = []
