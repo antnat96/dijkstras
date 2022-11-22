@@ -9,7 +9,7 @@ import math
 import sys
 
 
-# Heap helper functions
+# Utility functions to find parents/children in the heap
 def parent(index):
     return (index - 1) // 2
 
@@ -42,29 +42,13 @@ class Heap:
     def leaf(self, index):
         return index > (self.size / 2) - 1
 
-    def heapify(self, index):
-        heapify_at_index = index
-        left_child_index = lt_child(index)
-        right_child_index = rt_child(index)
-
-        if left_child_index < self.size - 1 and self.heap[left_child_index][1] < self.heap[heapify_at_index][1]:
-            heapify_at_index = left_child_index
-
-        if right_child_index < self.size - 1 and self.heap[right_child_index][1] < self.heap[heapify_at_index][1]:
-            heapify_at_index = right_child_index
-
-        if heapify_at_index != index:
-            self.swap(heapify_at_index, index)
-            self.heapify(heapify_at_index)
-
     def decrease_key(self, vertex, distance):
         # Update the distance value of the vertex in question
         pos_of_vertex_in_heap = self.positions[vertex]
         self.heap[pos_of_vertex_in_heap][1] = distance
 
         # While the distance value of the vertex is less than that of its parent
-        while self.heap[pos_of_vertex_in_heap] is not None and self.heap[parent(pos_of_vertex_in_heap)] is not None \
-                and self.heap[pos_of_vertex_in_heap][1] < self.heap[parent(pos_of_vertex_in_heap)][1]:
+        while self.heap[pos_of_vertex_in_heap][1] < self.heap[parent(pos_of_vertex_in_heap)][1]:
             # Bubble up the lower value to maintain min heap property
             self.swap(pos_of_vertex_in_heap, parent(pos_of_vertex_in_heap))
             # Check again
@@ -83,11 +67,15 @@ class Heap:
         self.positions[second_index] = temp_pos_val
 
     def insert(self, vertex):
+        # Ensure that we stop inserting at the max size
         if self.size >= self.max_size:
             return
 
+        # Insert into the heap
         self.heap[self.size] = vertex
+        # Track the position
         self.positions[self.size] = vertex[0]
+        # Increment the heap size
         self.size += 1
 
     # Returns the vertex with the lowest distance
@@ -101,13 +89,7 @@ class Heap:
         # Decrease size
         self.size -= 1
 
-        self.heapify(0)
         return minimum
-
-    def show(self):
-        print('heap', self.heap)
-        print('positions', self.positions)
-        print('size', self.size)
 
 
 # Assume source is 1 according to assignment instructions (or in this case, 0 due to the zero-based indexing convention)
@@ -116,7 +98,7 @@ def dijkstra(adjacency_list, vertices, src=0):
     vertices_count = len(vertices)
 
     # Initialize heap
-    h = Heap(vertices_count + 1)
+    h = Heap(vertices_count)
 
     # Watch/Manage distances from source (for example, distances[5] = 8 means the distance from the source to 5 is 8)
     distances = []
@@ -126,7 +108,10 @@ def dijkstra(adjacency_list, vertices, src=0):
     for vertex_index in range(vertices_count):
         distances.append(sys.maxint)
         previous.append(None)
-        h.insert([vertex_index, distances[vertex_index]])
+        data = [0, 0] if vertex_index == 0 else [vertex_index, distances[vertex_index]]
+        h.insert(data)
+
+    print(h.heap)
 
     h.setup(src)
     distances[src] = 0
@@ -207,7 +192,7 @@ def main():
                 # Use '-1' to transform edges into index-friendly integers
                 edge_1 = int(split_line[0]) - 1
                 edge_2 = int(split_line[1]) - 1
-                weight = int(split_line[2])
+                weight = float(split_line[2])
                 edges.append([edge_1, edge_2, weight])
                 vertices.add(edge_1)
                 vertices.add(edge_2)
