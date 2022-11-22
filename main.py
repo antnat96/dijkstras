@@ -90,9 +90,6 @@ class Heap:
         self.positions[self.size] = vertex[0]
         self.size += 1
 
-    def vertex_is_in_heap(self, vertex):
-        return self.positions[vertex] < self.size
-
     # Returns the vertex with the lowest distance
     def extract_min(self):
         # Get the minimum
@@ -137,31 +134,26 @@ def dijkstra(adjacency_list, vertices, src=0):
 
     # While heap is not empty
     while h.is_empty() is False:
-        # u is the node in heap with the smallest distance
-        # in the first iteration, it will be the source node
-        u = h.extract_min()
-        min_vertex = u[0]
+        # min_vertex is the node in heap with the smallest distance value
+        # In the first iteration, it will be the source node
+        [min_vertex, min_vertex_distance] = h.extract_min()
 
         if adjacency_list[min_vertex] is None:
             continue
 
-        # for each neighbor v of u according to adjacency list:
-        # neighbor is in format [neighborVertex, distanceFromMinVertex]
+        # for each neighbor v of min_vertex according to adjacency list:
         for incident_vertex in adjacency_list[min_vertex]:
-            if distances[min_vertex] == sys.maxint:
-                continue
-
+            # neighbor is in format [vertex, weight/distance from min_vertex]
             [neighbor_vertex, distance_from_min_vertex] = incident_vertex
 
-            if h.vertex_is_in_heap(neighbor_vertex) is False:
-                continue
-
-            # print('neighbor of', min_vertex, 'is', neighbor_vertex, 'with distance', distance_from_min_vertex)
+            print('neighbor of {0} is {1} with distance {2}'.format(min_vertex, neighbor_vertex,
+                                                                    distance_from_min_vertex))
 
             accumulated_distance = distances[min_vertex] + distance_from_min_vertex
 
             # If shorter distance was just discovered from source to the neighboring vertex
             if accumulated_distance < distances[neighbor_vertex]:
+                print('found shorter distance from {0} to {1}'.format(min_vertex, neighbor_vertex))
                 distances[neighbor_vertex] = accumulated_distance
                 h.decrease_key(neighbor_vertex, accumulated_distance)
 
@@ -171,9 +163,6 @@ def dijkstra(adjacency_list, vertices, src=0):
         print('Shortest Distance is {0}'.format(distances[i]))
         print('Shortest Path is not yet implemented')
         print('-----------------------------------------------')
-
-
-
 
 
 def main():
@@ -215,7 +204,7 @@ def main():
     if e != len(edges):
         print('You may be missing an edge or may have entered extra edges. Please check your input.')
 
-    # Create graph representation - first element in list is the connected vertex, second element is the weight
+    # Create graph representation - first element in list is the connected vertex, second element is weight from source
     adjacency_list = [None] * n
     for edge in edges:
         if adjacency_list[edge[0]] is None:
