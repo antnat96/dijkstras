@@ -25,7 +25,10 @@ def rtChild(index):
 # Heap class
 class Heap:
     def __init__(self, max_size):
-        self.heap = [None] * (max_size + 1)
+        # The heap
+        self.heap = [None] * max_size
+        # An array to watch/manage the position of a given vertex in the heap
+        self.positions = [None] * max_size
         self.size = 0
         self.max_size = max_size
 
@@ -38,7 +41,6 @@ class Heap:
     def heapify(self, index):
         if self.leaf(index):
             return
-        # TODO: Left off here
         temp_pos = index
         if rtChild(index) <= self.size:
             temp_pos = ltChild(index) if self.heap[ltChild(index)] < self.heap[rtChild(index)] else rtChild(index)
@@ -60,15 +62,16 @@ class Heap:
             return
 
         self.heap[self.size] = vertex
+        self.positions[self.size] = vertex[0]
         self.size += 1
-
-        next_vertex_index = self.size
-
-        # Maintain heap property
-        while self.heap[next_vertex_index] is not None and self.heap[parent(next_vertex_index)] is not None \
-                and self.heap[next_vertex_index] < self.heap[parent(next_vertex_index)]:
-            self.swap(next_vertex_index, parent(next_vertex_index))
-            next_vertex_index = parent(next_vertex_index)
+        #
+        # next_vertex_index = self.size
+        #
+        # # Maintain heap property
+        # while self.heap[next_vertex_index] is not None and self.heap[parent(next_vertex_index)] is not None \
+        #         and self.heap[next_vertex_index] < self.heap[parent(next_vertex_index)]:
+        #     self.swap(next_vertex_index, parent(next_vertex_index))
+        #     next_vertex_index = parent(next_vertex_index)
 
     def extract_min(self):
         minimum = self.heap[0]
@@ -78,40 +81,46 @@ class Heap:
         return minimum
 
     def show(self):
-        print(self.heap)
+        print('heap', self.heap)
+        print('positions', self.positions)
 
 
-def dijkstra(vertices, edges, adjacency_list):
-    dist = [sys.maxint] * len(vertices)
-    dist[0] = 0
-    prev = [None] * len(vertices)
+# Assume source is 1 (or in this case, 0 due to the zero based indexing convention)
+def dijkstra(adjacency_list, vertices, src=0):
+    # Get a count of all the vertices
+    vertices_count = len(vertices)
 
-    # Create heap
-    h = Heap(len(vertices))
+    # Initialize heap
+    h = Heap(vertices_count + 1)
 
-    for vertex in vertices:
-        h.insert(vertex)
+    # Watch/Manage distances from source (for example, distances[5] = 8 means the distance from the source to 5 is 8)
+    distances = []
+
+    # Runs V times
+    for vertex_index in range(vertices_count):
+        distances.append(sys.maxint)
+        h.insert([vertex_index, distances[vertex_index]])
 
     h.show()
 
     # While heap is not empty
-    while h.is_empty() is False:
-        # u node in heap with smallest dist
-        # remove u from heap
-        u = h.extract_min()
-        print(u)
-
-        # for each neighbor v of u according to adjacency list:
-        # neighbor is in format [neighborVertex, distanceFromIndexVertex]
-        for [neighborVertex, distanceFromIndexVertex] in adjacency_list[u]:
-            print('neighbor of', u, 'is', neighborVertex, 'with distance', distanceFromIndexVertex)
-            acc = dist[u] + distanceFromIndexVertex
-            print('acc', acc)
-            # If shorter distance was found (?)
-            if acc < dist[neighborVertex]:
-                dist[neighborVertex] = acc
-                prev[neighborVertex] = u
-                break
+    # while h.is_empty() is False:
+    #     # u node in heap with smallest dist
+    #     # remove u from heap
+    #     u = h.extract_min()
+    #     print(u)
+    #
+    #     # for each neighbor v of u according to adjacency list:
+    #     # neighbor is in format [neighborVertex, distanceFromIndexVertex]
+    #     for [neighborVertex, distanceFromIndexVertex] in adjacency_list[u]:
+    #         print('neighbor of', u, 'is', neighborVertex, 'with distance', distanceFromIndexVertex)
+    #         acc = dist[u] + distanceFromIndexVertex
+    #         print('acc', acc)
+    #         # If shorter distance was found (?)
+    #         if acc < dist[neighborVertex]:
+    #             dist[neighborVertex] = acc
+    #             prev[neighborVertex] = u
+    #             break
 
     print('done')
 
@@ -144,7 +153,7 @@ def main():
                 # Use '-1' to transform edges into index-friendly integers
                 edge_1 = int(split_line[0]) - 1
                 edge_2 = int(split_line[1]) - 1
-                weight = int(split_line[2]) - 1
+                weight = int(split_line[2])
                 edges.append([edge_1, edge_2, weight])
                 vertices.add(edge_1)
                 vertices.add(edge_2)
@@ -154,7 +163,7 @@ def main():
     if e != len(edges):
         print('You may be missing an edge or may have entered extra edges. Please check your input.')
 
-    # Create graph representation and initialize visited list
+    # Create graph representation - first element in list is the connected vertex, second element is the weight
     adjacency_list = [None] * n
     for edge in edges:
         if adjacency_list[edge[0]] is None:
@@ -162,7 +171,8 @@ def main():
         else:
             adjacency_list[edge[0]].append([edge[1], edge[2]])
 
-    dijkstra(vertices, edges, adjacency_list)
+    # Run Dijkstra's algorithm on the built graph
+    dijkstra(adjacency_list, vertices)
 
 
 if __name__ == '__main__':
