@@ -5,7 +5,17 @@
 # 1. Run 'python main.py' without the quotes.
 # 2. When prompted to input, paste the entire graph representation OR enter it line by line, and when finished hit
 #    enter TWICE to create an empty line. The program recognizes an empty line as the end of the input.
-import math
+
+# My test cases that are producing the expected output:
+
+# 4
+# 4
+# 3 4 1
+# 1 2 1
+# 2 3 1
+# 1 3 1
+
+
 import sys
 
 
@@ -48,7 +58,8 @@ class Heap:
         self.heap[pos_of_vertex_in_heap][1] = distance
 
         # While the distance value of the vertex is less than that of its parent
-        while self.heap[pos_of_vertex_in_heap][1] < self.heap[parent(pos_of_vertex_in_heap)][1]:
+        while pos_of_vertex_in_heap > 0 \
+                and self.heap[pos_of_vertex_in_heap][1] < self.heap[parent(pos_of_vertex_in_heap)][1]:
             # Bubble up the lower value to maintain min heap property
             self.swap(pos_of_vertex_in_heap, parent(pos_of_vertex_in_heap))
             # Check again
@@ -115,7 +126,6 @@ def dijkstra(adjacency_list, vertices, src=0):
 
     h.setup(src)
     distances[src] = 0
-    h.decrease_key(src, 0)
 
     # While heap is not empty
     while h.is_empty() is False:
@@ -138,10 +148,13 @@ def dijkstra(adjacency_list, vertices, src=0):
 
             # If shorter distance was just discovered from source to the neighboring vertex
             if accumulated_distance < distances[neighbor_vertex]:
-                print('found shorter distance from {0} to {1}'.format(min_vertex, neighbor_vertex))
+                print('{0} is shorter than {1} going from {2} to {3}, updating'.format(
+                    accumulated_distance, distances[neighbor_vertex], min_vertex, neighbor_vertex))
                 distances[neighbor_vertex] = accumulated_distance
                 previous[neighbor_vertex] = min_vertex
+                print('before', h.heap)
                 h.decrease_key(neighbor_vertex, accumulated_distance)
+                print('after', h.heap)
 
     print('Source Vertex is Vertex {0}\n'.format(src + 1))
     for i in range(len(distances)):
