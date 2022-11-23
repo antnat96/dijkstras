@@ -54,8 +54,6 @@ class Heap:
 
     def decrease_key(self, vertex, updated_distance_from_source):
         this_vertex_index_in_heap = self.positions[vertex]
-        self.positions[vertex] = None
-        print(vertex, this_vertex_index_in_heap, self.positions, self.heap)
 
         self.heap[this_vertex_index_in_heap][1] = updated_distance_from_source
 
