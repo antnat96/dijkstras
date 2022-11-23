@@ -52,18 +52,21 @@ class Heap:
     def leaf(self, index):
         return index > (self.size / 2) - 1
 
-    def decrease_key(self, vertex, distance):
-        # Update the distance value of the vertex in question
-        pos_of_vertex_in_heap = self.positions[vertex]
-        self.heap[pos_of_vertex_in_heap][1] = distance
+    def decrease_key(self, vertex, updated_distance_from_source):
+        this_vertex_index_in_heap = self.positions[vertex]
+        self.positions[vertex] = None
+        print(vertex, this_vertex_index_in_heap, self.positions, self.heap)
 
-        # While the distance value of the vertex is less than that of its parent
-        while pos_of_vertex_in_heap > 0 \
-                and self.heap[pos_of_vertex_in_heap][1] < self.heap[parent(pos_of_vertex_in_heap)][1]:
-            # Bubble up the lower value to maintain min heap property
-            self.swap(pos_of_vertex_in_heap, parent(pos_of_vertex_in_heap))
-            # Check again
-            pos_of_vertex_in_heap = parent(pos_of_vertex_in_heap)
+        self.heap[this_vertex_index_in_heap][1] = updated_distance_from_source
+
+        self.positions[this_vertex_index_in_heap] = this_vertex_index_in_heap
+
+        while this_vertex_index_in_heap > 0:
+            if self.heap[this_vertex_index_in_heap][1] < self.heap[parent(this_vertex_index_in_heap)][1]:
+                self.swap(this_vertex_index_in_heap, parent(this_vertex_index_in_heap))
+                this_vertex_index_in_heap = parent(this_vertex_index_in_heap)
+            else:
+                break
 
     # Swap two vertices in the heap and positions watcher
     def swap(self, first_index, second_index):
@@ -158,15 +161,15 @@ def dijkstra(adjacency_list, vertices, src=0):
             # neighbor is in format [vertex, weight/distance from min_vertex]
             [neighbor_vertex, distance_from_min_vertex] = incident_vertex
 
-            # print('neighbor of {0} is {1} with distance {2}'.format(min_vertex, neighbor_vertex,
-            #                                                         distance_from_min_vertex))
+            print('neighbor of {0} is {1} with distance {2}'.format(min_vertex, neighbor_vertex,
+                                                                    distance_from_min_vertex))
 
             accumulated_distance = distances[min_vertex] + distance_from_min_vertex
 
             # If shorter distance was just discovered from source to the neighboring vertex
             if accumulated_distance < distances[neighbor_vertex]:
-                print('{0} is shorter than {1} going from {2} to {3}, updating'.format(
-                    accumulated_distance, distances[neighbor_vertex], min_vertex, neighbor_vertex))
+                # print('{0} is shorter than {1} going from {2} to {3}, updating'.format(
+                #     accumulated_distance, distances[neighbor_vertex], min_vertex, neighbor_vertex))
                 distances[neighbor_vertex] = accumulated_distance
                 previous[neighbor_vertex] = min_vertex
                 print('before decrease key', h.heap)
