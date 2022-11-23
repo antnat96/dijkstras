@@ -47,7 +47,7 @@ class Heap:
         self.positions[src] = src
 
     def is_empty(self):
-        return self.size == 0 or len(self.heap) == 0
+        return self.size == 0
 
     def leaf(self, index):
         return index > (self.size / 2) - 1
@@ -89,6 +89,21 @@ class Heap:
         # Increment the heap size
         self.size += 1
 
+    def sink(self, vertex):
+        sink_at_vertex = vertex
+        lt_child_index = lt_child(vertex)
+        rt_child_index = rt_child(vertex)
+
+        if lt_child_index < self.size and self.heap[sink_at_vertex][1] > self.heap[lt_child_index][1]:
+            sink_at_vertex = lt_child_index
+
+        if rt_child_index < self.size and self.heap[sink_at_vertex][1] > self.heap[rt_child_index][1]:
+            sink_at_vertex = rt_child_index
+
+        if sink_at_vertex != vertex:
+            self.swap(vertex, sink_at_vertex)
+            self.sink(sink_at_vertex)
+
     # Returns the vertex with the lowest distance
     def extract_min(self):
         # Get the minimum
@@ -96,6 +111,9 @@ class Heap:
 
         # Swap the new minimum with the last entry in the heap (aka the one with the largest distance value)
         self.swap(0, self.size - 1)
+
+        # Maintain heap property
+        self.sink(0)
 
         # Decrease size
         self.size -= 1
@@ -112,17 +130,14 @@ def dijkstra(adjacency_list, vertices, src=0):
     h = Heap(vertices_count)
 
     # Watch/Manage distances from source (for example, distances[5] = 8 means the distance from the source to 5 is 8)
-    distances = []
-    previous = []
+    distances = [sys.maxint] * vertices_count
+    previous = [None] * vertices_count
+    visited = [False] * vertices_count
 
     # Runs V times
     for vertex_index in range(vertices_count):
-        distances.append(sys.maxint)
-        previous.append(None)
         data = [0, 0] if vertex_index == 0 else [vertex_index, distances[vertex_index]]
         h.insert(data)
-
-    print(h.heap)
 
     h.setup(src)
     distances[src] = 0
@@ -133,6 +148,8 @@ def dijkstra(adjacency_list, vertices, src=0):
         # In the first iteration, it will be the source node
         [min_vertex, min_vertex_distance] = h.extract_min()
 
+        visited[min_vertex] = True
+
         if adjacency_list[min_vertex] is None:
             continue
 
@@ -141,8 +158,8 @@ def dijkstra(adjacency_list, vertices, src=0):
             # neighbor is in format [vertex, weight/distance from min_vertex]
             [neighbor_vertex, distance_from_min_vertex] = incident_vertex
 
-            print('neighbor of {0} is {1} with distance {2}'.format(min_vertex, neighbor_vertex,
-                                                                    distance_from_min_vertex))
+            # print('neighbor of {0} is {1} with distance {2}'.format(min_vertex, neighbor_vertex,
+            #                                                         distance_from_min_vertex))
 
             accumulated_distance = distances[min_vertex] + distance_from_min_vertex
 
@@ -152,9 +169,9 @@ def dijkstra(adjacency_list, vertices, src=0):
                     accumulated_distance, distances[neighbor_vertex], min_vertex, neighbor_vertex))
                 distances[neighbor_vertex] = accumulated_distance
                 previous[neighbor_vertex] = min_vertex
-                print('before', h.heap)
+                print('before decrease key', h.heap)
                 h.decrease_key(neighbor_vertex, accumulated_distance)
-                print('after', h.heap)
+                print('after decrease key', h.heap)
 
     print('Source Vertex is Vertex {0}\n'.format(src + 1))
     for i in range(len(distances)):
@@ -166,7 +183,7 @@ def dijkstra(adjacency_list, vertices, src=0):
             print "Shortest Path: ",
             shortest_path = []
             cur = i
-            while cur != src:
+            while cur != src and previous[cur is not None]:
                 prev = previous[cur]
                 shortest_path.append(prev)
                 cur = prev
