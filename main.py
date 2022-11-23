@@ -159,20 +159,13 @@ def dijkstra(adjacency_list, vertices, src=0):
             # neighbor is in format [vertex, weight/distance from min_vertex]
             [neighbor_vertex, distance_from_min_vertex] = incident_vertex
 
-            print('neighbor of {0} is {1} with distance {2}'.format(min_vertex, neighbor_vertex,
-                                                                    distance_from_min_vertex))
-
             accumulated_distance = distances[min_vertex] + distance_from_min_vertex
 
             # If shorter distance was just discovered from source to the neighboring vertex
             if accumulated_distance < distances[neighbor_vertex]:
-                # print('{0} is shorter than {1} going from {2} to {3}, updating'.format(
-                #     accumulated_distance, distances[neighbor_vertex], min_vertex, neighbor_vertex))
                 distances[neighbor_vertex] = accumulated_distance
                 previous[neighbor_vertex] = min_vertex
-                print('before decrease key', h.heap)
                 h.decrease_key(neighbor_vertex, accumulated_distance)
-                print('after decrease key', h.heap)
 
     print('Source Vertex is Vertex {0}\n'.format(src + 1))
     for i in range(len(distances)):
