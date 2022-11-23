@@ -6,8 +6,8 @@
 # 2. When prompted to input, paste the entire graph representation OR enter it line by line, and when finished hit
 #    enter TWICE to create an empty line. The program recognizes an empty line as the end of the input.
 
-# My test cases that are producing the expected output:
-
+# My test cases that are producing expected output:
+# Test 1
 # 4
 # 4
 # 3 4 1
@@ -15,6 +15,25 @@
 # 2 3 1
 # 1 3 1
 
+# Test 2
+# 7
+# 6
+# 1 2 2
+# 1 3 4
+# 2 4 1
+# 2 5 3
+# 3 6 2
+# 3 7 1
+
+# Test 3
+# 6
+# 6
+# 4 3 2
+# 4 6 5
+# 5 4 1
+# 1 2 1
+# 2 5 2
+# 1 6 8.5
 
 import sys
 
@@ -52,17 +71,22 @@ class Heap:
     def leaf(self, index):
         return index > (self.size / 2) - 1
 
+    # When a new shorter distance value is found, update the heap and maintain heap property
     def decrease_key(self, vertex, updated_distance_from_source):
+        # Get the location of the vertex for which a smaller distance from the source was found
         this_vertex_index_in_heap = self.positions[vertex]
 
+        # Set the new distance value for the vertex
         self.heap[this_vertex_index_in_heap][1] = updated_distance_from_source
-
         self.positions[this_vertex_index_in_heap] = this_vertex_index_in_heap
 
+        # While this vertex is not the source
         while this_vertex_index_in_heap > 0:
+            # If a swap is necessary, make it
             if self.heap[this_vertex_index_in_heap][1] < self.heap[parent(this_vertex_index_in_heap)][1]:
                 self.swap(this_vertex_index_in_heap, parent(this_vertex_index_in_heap))
                 this_vertex_index_in_heap = parent(this_vertex_index_in_heap)
+            # Otherwise, finish
             else:
                 break
 
@@ -95,14 +119,18 @@ class Heap:
         lt_child_index = lt_child(vertex)
         rt_child_index = rt_child(vertex)
 
+        # Check if left child is smaller, if so, bubble it up
         if lt_child_index < self.size and self.heap[sink_at_vertex][1] > self.heap[lt_child_index][1]:
             sink_at_vertex = lt_child_index
 
+        # Check if right child is smaller, if so, bubble it up
         if rt_child_index < self.size and self.heap[sink_at_vertex][1] > self.heap[rt_child_index][1]:
             sink_at_vertex = rt_child_index
 
+        # If a correction is needed to maintain the heap property, make it
         if sink_at_vertex != vertex:
             self.swap(vertex, sink_at_vertex)
+            # And check again
             self.sink(sink_at_vertex)
 
     # Returns the vertex with the lowest distance
@@ -132,10 +160,10 @@ def dijkstra(adjacency_list, vertices, src=0):
 
     # Watch/Manage distances from source (for example, distances[5] = 8 means the distance from the source to 5 is 8)
     distances = [sys.maxint] * vertices_count
-    previous = [None] * vertices_count
-    visited = [False] * vertices_count
+    # Watch the shortest paths found
+    shortest_path_tracker = [None] * vertices_count
 
-    # Runs V times
+    # Insert the vertices and weights into the heap
     for vertex_index in range(vertices_count):
         data = [0, 0] if vertex_index == 0 else [vertex_index, distances[vertex_index]]
         h.insert(data)
@@ -149,8 +177,6 @@ def dijkstra(adjacency_list, vertices, src=0):
         # In the first iteration, it will be the source node
         [min_vertex, min_vertex_distance] = h.extract_min()
 
-        visited[min_vertex] = True
-
         if adjacency_list[min_vertex] is None:
             continue
 
@@ -159,31 +185,38 @@ def dijkstra(adjacency_list, vertices, src=0):
             # neighbor is in format [vertex, weight/distance from min_vertex]
             [neighbor_vertex, distance_from_min_vertex] = incident_vertex
 
+            # Calculate the new (possibly shorter) distance from the source to the neighbor vertex
             accumulated_distance = distances[min_vertex] + distance_from_min_vertex
 
             # If shorter distance was just discovered from source to the neighboring vertex
             if accumulated_distance < distances[neighbor_vertex]:
+                # Update distance value
                 distances[neighbor_vertex] = accumulated_distance
-                previous[neighbor_vertex] = min_vertex
+                # Maintain heap property
                 h.decrease_key(neighbor_vertex, accumulated_distance)
+                # Add path to tracker for later
+                shortest_path_tracker[neighbor_vertex] = min_vertex
 
     print('Source Vertex is Vertex {0}\n'.format(src + 1))
+    # Loop through the discovered smallest distances
     for i in range(len(distances)):
+        # Print the vertex and its distance from the source
         print('Vertex: {0}'.format(i + 1))
         print('Shortest Distance: {0}'.format(distances[i]))
+        # If it is the source, no need to print the shortest path
         if i == src:
             print "This is the source vertex",
+        # If not, print the shortest path
         else:
             print "Shortest Path: ",
             shortest_path = []
             cur = i
-            while cur != src and previous[cur is not None]:
-                prev = previous[cur]
-                shortest_path.append(prev)
-                cur = prev
+            if shortest_path_tracker[cur] is not None or cur == src:
+                while cur is not None:
+                    shortest_path.append(cur)
+                    cur = shortest_path_tracker[cur]
             for y in reversed(shortest_path):
                 print y + 1,
-            print i + 1,
         print('\n-----------------------------------------------')
 
 
